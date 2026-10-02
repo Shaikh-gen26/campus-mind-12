@@ -150,8 +150,20 @@ def _gemini_reply(history, context):
         with urlopen(req, timeout=25) as response:
             data = json.loads(response.read().decode())
         return "".join(part.get("text", "") for part in data["candidates"][0]["content"]["parts"]).strip()
-    except (HTTPError, URLError, TimeoutError, ValueError, KeyError, IndexError) as exc:
-        current_app.logger.warning("CampusGPT provider request failed: %s", exc)
+    except HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")
+        current_app.logger.warning(
+            "CampusGPT provider HTTP error: %s | BODY: %s",
+            exc,
+            error_body,
+        )
+        raise RuntimeError("CampusGPT is temporarily unavailable. Please try again shortly.") from exc
+
+    except (URLError, TimeoutError, ValueError, KeyError, IndexError) as exc:
+        current_app.logger.warning(
+            "CampusGPT provider request failed: %s",
+            exc,
+        )
         raise RuntimeError("CampusGPT is temporarily unavailable. Please try again shortly.") from exc
 
 
