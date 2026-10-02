@@ -147,7 +147,7 @@ def _gemini_reply(history, context):
     req = Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
                   data=body, headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
     try:
-        with urlopen(req, timeout=25) as response:
+        with urlopen(req, timeout=60) as response:
             data = json.loads(response.read().decode())
         return "".join(part.get("text", "") for part in data["candidates"][0]["content"]["parts"]).strip()
     except HTTPError as exc:
